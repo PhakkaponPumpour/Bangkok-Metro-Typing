@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>รางไทย พิมพ์ | Metro Typing Thailand</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;500;600;700;800&family=Sarabun:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0a0d12;
+    --panel:#12161f;
+    --panel-2:#171c27;
+    --hairline:#242b38;
+    --ink:#e9ecf1;
+    --ink-dim:#8891a3;
+    --ink-faint:#4d5566;
+    --amber:#f2a93c;
+    --red:#e4573d;
+    --green:#59d68c;
+
+    --sukhumvit:#8fc31f;
+    --silom:#00754a;
+    --blue:#1f4fb0;
+    --purple:#7c3aa8;
+
+    --line-color: var(--sukhumvit);
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(ellipse 900px 500px at 15% -10%, rgba(143,195,31,0.06), transparent 60%),
+      radial-gradient(ellipse 900px 500px at 85% 110%, rgba(124,58,168,0.06), transparent 60%),
+      var(--bg);
+    color:var(--ink);
+    font-family:'Sarabun', sans-serif;
+    min-height:100vh;
+    display:flex;
+    align-items:flex-start;
+    justify-content:center;
+    padding:28px 16px 60px;
+  }
+  .app{width:100%; max-width:880px;}
+  h1,h2,h3{font-family:'Kanit',sans-serif; margin:0;}
+  .mono{font-family:'JetBrains Mono', monospace;}
+
+  /* ---------- Header / board ---------- */
+  .board-header{
+    display:flex; align-items:baseline; justify-content:space-between;
+    padding:0 4px 18px;
+    border-bottom:2px solid var(--hairline);
+    margin-bottom:22px;
+  }
+  .board-title{font-size:26px; font-weight:800; letter-spacing:0.3px;}
+  .board-title span{color:var(--line-color); transition:color .3s;}
+  .board-sub{color:var(--ink-dim); font-size:13px; font-family:'JetBrains Mono',monospace; letter-spacing:0.5px;}
+
+  /* ---------- Panels ---------- */
+  .panel{
+    background:linear-gradient(180deg, var(--panel), var(--panel-2));
+    border:1px solid var(--hairline);
+    border-radius:14px;
+    padding:22px;
+  }
+  .hidden{display:none !important;}
+
+  /* ---------- MENU ---------- */
+  .section-label{
+    font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:2px;
+    color:var(--ink-faint); text-transform:uppercase; margin-bottom:10px;
+  }
+  .line-grid{display:grid; grid-template-columns:repeat(2,1fr); gap:10px; margin-bottom:24px;}
+  @media (max-width:560px){.line-grid{grid-template-columns:1fr;}}
+  .line-card{
+    position:relative;
+    background:var(--panel-2);
+    border:1px solid var(--hairline);
+    border-left:5px solid var(--card-color, var(--sukhumvit));
+    border-radius:10px;
+    padding:14px 16px;
+    cursor:pointer;
+    text-align:left;
+    color:var(--ink);
+    font-family:inherit;
+    transition:transform .15s ease, border-color .15s ease, background .15s ease;
+  }
+  .line-card:hover{transform:translateY(-2px); background:#1b212e;}
+  .line-card.selected{border-color:var(--card-color, var(--sukhumvit)); background:#1c2432; box-shadow:0 0 0 1px var(--card-color,var(--sukhumvit)) inset;}
+  .line-card .lname{font-family:'Kanit'; font-weight:700; font-size:16px;}
+  .line-card .lmeta{font-size:12px; color:var(--ink-dim); margin-top:3px; font-family:'JetBrains Mono',monospace;}
+  .line-dot{display:inline-block; width:9px; height:9px; border-radius:50%; background:var(--card-color,var(--sukhumvit)); margin-right:7px; vertical-align:1px;}
+
+  .mode-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-bottom:18px;}
+  @media (max-width:640px){.mode-grid{grid-template-columns:repeat(2,1fr);}}
+  .mode-btn{
+    background:var(--panel-2); border:1px solid var(--hairline); border-radius:9px;
+    padding:12px 8px; text-align:center; cursor:pointer; color:var(--ink-dim);
+    font-family:'Kanit'; font-size:13.5px; font-weight:600; transition:all .15s;
+  }
+  .mode-btn .emoji{display:block; font-size:18px; margin-bottom:4px;}
+  .mode-btn:hover{color:var(--ink); border-color:#3a4356;}
+  .mode-btn.selected{color:var(--bg); background:var(--line-color); border-color:var(--line-color);}
+
+  .range-row{display:flex; gap:10px; margin-bottom:18px; flex-wrap:wrap;}
+  .range-row select{
+    flex:1; min-width:150px;
+    background:var(--panel-2); color:var(--ink); border:1px solid var(--hairline);
+    border-radius:8px; padding:10px 12px; font-family:'Sarabun'; font-size:14px;
+  }
+  .lang-toggle{display:flex; gap:8px; margin-bottom:22px;}
+  .lang-btn{
+    flex:1; padding:10px; text-align:center; border-radius:8px; cursor:pointer;
+    border:1px solid var(--hairline); background:var(--panel-2); color:var(--ink-dim);
+    font-family:'Kanit'; font-weight:600; font-size:13.5px;
+  }
+  .lang-btn.selected{color:var(--bg); background:var(--line-color); border-color:var(--line-color);}
+
+  .start-btn{
+    width:100%; padding:16px; border:none; border-radius:10px; cursor:pointer;
+    background:var(--line-color); color:#0a0d12; font-family:'Kanit'; font-weight:700;
+    font-size:17px; letter-spacing:0.5px; transition:filter .15s, transform .1s;
+  }
+  .start-btn:hover{filter:brightness(1.08);}
+  .start-btn:active{transform:scale(0.99);}
+  .start-btn:disabled{opacity:0.4; cursor:not-allowed;}
+
+  /* ---------- GAME ---------- */
+  .stat-row{
+    display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-bottom:18px;
+  }
+  @media (max-width:560px){.stat-row{grid-template-columns:repeat(2,1fr);}}
+  .stat{
+    background:var(--panel-2); border:1px solid var(--hairline); border-radius:9px;
+    padding:10px 12px;
+  }
+  .stat .slabel{font-size:10px; letter-spacing:1.5px; color:var(--ink-faint); text-transform:uppercase; font-family:'JetBrains Mono';}
+  .stat .sval{font-family:'JetBrains Mono'; font-size:20px; font-weight:700; margin-top:2px; color:var(--ink);}
+  .stat.combo .sval{color:var(--amber);}
+  .stat.acc .sval{color:var(--green);}
+
+  /* route rail */
+  .rail-wrap{position:relative; margin:6px 0 26px; padding:20px 6px 6px;}
+  .rail-track{position:relative; height:6px; background:var(--hairline); border-radius:4px; overflow:visible;}
+  .rail-fill{position:absolute; left:0; top:0; height:100%; background:var(--line-color); border-radius:4px; transition:width .35s ease;}
+  .rail-dots{position:absolute; top:-4px; left:0; right:0; display:flex; justify-content:space-between; pointer-events:none;}
+  .rail-dot{width:14px; height:14px; border-radius:50%; background:var(--panel); border:3px solid var(--hairline); transform:translateX(-7px);}
+  .rail-dot.done{border-color:var(--line-color); background:var(--line-color);}
+  .rail-dot.now{border-color:var(--amber); background:var(--amber); box-shadow:0 0 0 5px rgba(242,169,60,0.18);}
+  .rail-endcaps{display:flex; justify-content:space-between; margin-top:10px; font-size:12px; color:var(--ink-dim); font-family:'JetBrains Mono';}
+
+  /* split-flap station display */
+  .flap-zone{
+    text-align:center; padding:30px 10px 26px;
+    border-top:1px dashed var(--hairline); border-bottom:1px dashed var(--hairline);
+    margin-bottom:22px;
+  }
+  .flap-code{font-family:'JetBrains Mono'; color:var(--line-color); font-size:13px; letter-spacing:3px; margin-bottom:10px;}
+  .flap-name{
+    font-family:'Kanit'; font-weight:800; font-size:clamp(28px,7vw,46px);
+    letter-spacing:0.5px; line-height:1.15;
+  }
+  .flap-name .ch{display:inline-block; transition:color .08s;}
+  .flap-name .ch.correct{color:var(--green);}
+  .flap-name .ch.wrong{color:var(--red); text-decoration:underline wavy var(--red);}
+  .flap-name .ch.pending{color:var(--ink-faint);}
+  .flap-name .cursor{border-left:2px solid var(--amber); animation:blink 1s step-start infinite;}
+  @keyframes blink{50%{border-color:transparent;}}
+  .flap-next{margin-top:12px; color:var(--ink-dim); font-size:13px; font-family:'Sarabun';}
+  .flap-next b{color:var(--ink);}
+
+  .type-input{
+    width:100%; padding:16px 18px; font-size:20px; font-family:'Sarabun';
+    background:var(--panel-2); border:2px solid var(--hairline); border-radius:10px;
+    color:var(--ink); outline:none; transition:border-color .15s;
+  }
+  .type-input:focus{border-color:var(--line-color);}
+  .type-input.shake{animation:shake .25s;}
+  @keyframes shake{25%{transform:translateX(-6px);}75%{transform:translateX(6px);}}
+
+  .game-footer{display:flex; justify-content:space-between; align-items:center; margin-top:16px;}
+  .quit-link{color:var(--ink-faint); font-size:13px; cursor:pointer; font-family:'JetBrains Mono';}
+  .quit-link:hover{color:var(--ink-dim);}
+  .remain{color:var(--ink-dim); font-size:13px; font-family:'JetBrains Mono';}
+
+  /* ---------- RESULT ---------- */
+  .result-hero{text-align:center; padding:10px 0 26px;}
+  .result-hero .r-title{font-size:15px; color:var(--ink-dim); font-family:'JetBrains Mono'; letter-spacing:2px; text-transform:uppercase;}
+  .result-hero .r-line{font-size:30px; font-weight:800; font-family:'Kanit'; margin-top:6px;}
+  .result-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:22px;}
+  @media (max-width:560px){.result-grid{grid-template-columns:repeat(2,1fr);}}
+  .rstat{background:var(--panel-2); border:1px solid var(--hairline); border-radius:10px; padding:16px 10px; text-align:center;}
+  .rstat .slabel{font-size:10px; letter-spacing:1.5px; color:var(--ink-faint); font-family:'JetBrains Mono'; text-transform:uppercase;}
+  .rstat .sval{font-family:'JetBrains Mono'; font-size:26px; font-weight:700; margin-top:4px;}
+  .result-btns{display:flex; gap:10px;}
+  .result-btns button{
+    flex:1; padding:14px; border-radius:10px; border:1px solid var(--hairline); cursor:pointer;
+    font-family:'Kanit'; font-weight:600; font-size:14.5px; background:var(--panel-2); color:var(--ink);
+  }
+  .result-btns button.primary{background:var(--line-color); color:#0a0d12; border-color:var(--line-color);}
+
+  ::selection{background:var(--line-color); color:#0a0d12;}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="board-header">
+    <div>
+      <div class="board-title">ราง<span id="titleAccent">ไทย</span> พิมพ์</div>
+      <div class="board-sub">METRO TYPING · BTS / MRT · เล่นคนเดียว ออฟไลน์</div>
+    </div>
+  </div>
+
+  <!-- ============ MENU ============ -->
+  <div id="screenMenu" class="panel">
+    <div class="section-label">01 — เลือกสายรถไฟ</div>
+    <div class="line-grid" id="lineGrid"></div>
+
+    <div class="section-label">02 — เลือกโหมด</div>
+    <div class="mode-grid" id="modeGrid">
+      <div class="mode-btn" data-mode="full"><span class="emoji">🏁</span>จบสาย</div>
+      <div class="mode-btn" data-mode="reverse"><span class="emoji">🔁</span>จบสาย (สลับทิศ)</div>
+      <div class="mode-btn" data-mode="custom"><span class="emoji">📍</span>กำหนดเส้นทาง</div>
+      <div class="mode-btn" data-mode="free"><span class="emoji">🎲</span>สุ่มทั้งสาย</div>
+    </div>
+
+    <div id="customRange" class="range-row hidden">
+      <select id="fromSel"></select>
+      <select id="toSel"></select>
+    </div>
+
+    <div class="section-label">03 — ภาษาที่พิมพ์</div>
+    <div class="lang-toggle">
+      <div class="lang-btn selected" data-lang="th">ภาษาไทย</div>
+      <div class="lang-btn" data-lang="en">English</div>
+    </div>
+
+    <button class="start-btn" id="startBtn">เริ่มพิมพ์ →</button>
+  </div>
+
+  <!-- ============ GAME ============ -->
+  <div id="screenGame" class="panel hidden">
+    <div class="stat-row">
+      <div class="stat"><div class="slabel">เวลา</div><div class="sval mono" id="statTime">0.0</div></div>
+      <div class="stat"><div class="slabel">ตัวอักษร/นาที</div><div class="sval mono" id="statCpm">0</div></div>
+      <div class="stat acc"><div class="slabel">ความแม่นยำ</div><div class="sval mono" id="statAcc">100%</div></div>
+      <div class="stat combo"><div class="slabel">คอมโบ</div><div class="sval mono" id="statCombo">0</div></div>
+    </div>
+
+    <div class="rail-wrap">
+      <div class="rail-track">
+        <div class="rail-fill" id="railFill" style="width:0%"></div>
+        <div class="rail-dots" id="railDots"></div>
+      </div>
+      <div class="rail-endcaps">
+        <span id="railStart">-</span>
+        <span id="railEnd">-</span>
+      </div>
+    </div>
+
+    <div class="flap-zone">
+      <div class="flap-code" id="flapCode">— —</div>
+      <div class="flap-name" id="flapName"></div>
+      <div class="flap-next" id="flapNext"></div>
+    </div>
+
+    <input type="text" class="type-input" id="typeInput" autocomplete="off" autocorrect="off" spellcheck="false" placeholder="พิมพ์ชื่อสถานีที่นี่แล้วกด Enter…">
+
+    <div class="game-footer">
+      <span class="quit-link" id="quitLink">← ออกจากเกม</span>
+      <span class="remain" id="remainLabel">เหลืออีก 0 สถานี</span>
+    </div>
+  </div>
+
+  <!-- ============ RESULT ============ -->
+  <div id="screenResult" class="panel hidden">
+    <div class="result-hero">
+      <div class="r-title">ถึงสถานีปลายทางแล้ว</div>
+      <div class="r-line" id="resultLine">—</div>
+    </div>
+    <div class="result-grid">
+      <div class="rstat"><div class="slabel">เวลารวม</div><div class="sval" id="resTime">0.0s</div></div>
+      <div class="rstat"><div class="slabel">ตัวอักษร/นาที</div><div class="sval" id="resCpm">0</div></div>
+      <div class="rstat"><div class="slabel">ความแม่นยำ</div><div class="sval" id="resAcc">0%</div></div>
+      <div class="rstat"><div class="slabel">พิมพ์ผิด</div><div class="sval" id="resErr">0</div></div>
+      <div class="rstat"><div class="slabel">คอมโบสูงสุด</div><div class="sval" id="resCombo">0</div></div>
+      <div class="rstat"><div class="slabel">สถานีทั้งหมด</div><div class="sval" id="resStations">0</div></div>
+    </div>
+    <div class="result-btns">
+      <button id="againBtn">🔁 เล่นเส้นทางนี้อีกครั้ง</button>
+      <button class="primary" id="menuBtn">☰ เลือกสายใหม่</button>
+    </div>
+  </div>
+
+</div>
+
+<script src="dist/game.js" defer></script>
+</body>
+</html>

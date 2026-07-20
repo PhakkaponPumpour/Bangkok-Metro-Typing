@@ -1,0 +1,17 @@
+{
+  "name": "metro-typing-thailand",
+  "version": "1.0.0",
+  "description": "BTS/MRT metro typing game (single player, offline) - TypeScript source",
+  "private": true,
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc --watch",
+    "serve": "python3 -m http.server 8000"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.0"
+  },
+  "dependencies": {
+    "python3": "^0.0.1"
+  }
+}
