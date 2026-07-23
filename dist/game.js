@@ -183,6 +183,8 @@ class MetroTypingGame {
         this.customRange = $("customRange");
         this.startBtn = $("startBtn");
         this.typeInput = $("typeInput");
+        this.routePreview = $("routePreview");
+        this.routeMap = $("routeMap");
         this.screenMenu = $("screenMenu");
         this.screenGame = $("screenGame");
         this.screenResult = $("screenResult");
@@ -191,10 +193,20 @@ class MetroTypingGame {
         this.bindLangButtons();
         this.bindStaticButtons();
         this.bindTypingInput();
+        this.selectLine("blue");
+        document.querySelectorAll(".mode-btn").forEach((btn) => {
+            if (btn.dataset.mode === "full")
+                btn.click();
+        });
     }
     /* ---------- menu construction ---------- */
     buildLineCards() {
-        Object.keys(LINES).forEach((key) => {
+        const preferredOrder = ["blue", "purple", "sukhumvit", "silom"];
+        const orderedKeys = [
+            ...preferredOrder.filter((key) => key in LINES),
+            ...Object.keys(LINES).filter((key) => !preferredOrder.includes(key)),
+        ];
+        orderedKeys.forEach((key) => {
             const line = LINES[key];
             const card = document.createElement("button");
             card.className = "line-card";
@@ -213,6 +225,8 @@ class MetroTypingGame {
         });
         document.documentElement.style.setProperty("--line-color", LINES[key].colorHex);
         $("titleAccent").style.color = LINES[key].colorHex;
+        const line = LINES[key];
+        this.routePreview.innerHTML = this.buildMapMarkup(line.stations, 0, line.label, line.colorHex, true);
         this.populateRangeSelects();
         this.validateStart();
     }
@@ -361,6 +375,7 @@ class MetroTypingGame {
             : `<b>สถานีปลายทาง 🏁</b>`;
         this.renderTypedChars();
         this.updateRail();
+        this.renderRouteMap();
     }
     renderTypedChars() {
         const target = this.currentTarget();
@@ -379,6 +394,58 @@ class MetroTypingGame {
             html += '<span class="ch cursor">&nbsp;</span>';
         }
         $("flapName").innerHTML = html;
+    }
+    buildMapMarkup(route, currentIdx, title, color, compact) {
+        if (!route.length)
+            return "";
+        const total = Math.max(route.length - 1, 1);
+        const points = route.map((_, i) => {
+            const x = 8 + (i / total) * 84;
+            const y = 24 + (i % 2 === 0 ? 20 : 56);
+            return `${x},${y}`;
+        });
+        const step = compact ? Math.max(1, Math.ceil(route.length / 6)) : 1;
+        const labels = route
+            .map((station, i) => {
+            const x = 8 + (i / total) * 84;
+            const y = 24 + (i % 2 === 0 ? 20 : 56);
+            const show = compact ? i === 0 || i === route.length - 1 || i === currentIdx || i % step === 0 : true;
+            if (!show)
+                return "";
+            const labelY = y - 8;
+            const labelX = x + 1;
+            return `<text class="route-map-label" x="${labelX}" y="${labelY}">${station.th}</text><text class="route-map-code" x="${labelX}" y="${labelY + 9}">${station.code || "—"}</text>`;
+        })
+            .join("");
+        const stops = route
+            .map((station, i) => {
+            const x = 8 + (i / total) * 84;
+            const y = 24 + (i % 2 === 0 ? 20 : 56);
+            const cls = i < currentIdx ? "done" : i === currentIdx ? "current" : "pending";
+            const fill = cls === "current" ? "#f2a93c" : cls === "done" ? color : "#ffffff";
+            return `<circle cx="${x}" cy="${y}" r="${compact ? 4.4 : 3.6}" fill="${fill}" stroke="${color}" stroke-width="1.8" />`;
+        })
+            .join("");
+        return `
+      <div class="rp-title">ตัวอย่างเส้นทาง</div>
+      <div class="rp-line">${title}</div>
+      <div class="rp-sub">MRT route • สถานีจริงตามลำดับ</div>
+      <svg class="route-map-svg" viewBox="0 0 100 100" preserveAspectRatio="none">
+        <rect x="2" y="2" width="96" height="96" rx="10" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.08)"/>
+        <path d="M ${points.join(" L ")}" stroke="${color}" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round" />
+        ${stops}
+        ${labels}
+      </svg>
+      <div class="route-map-hint">สถานีปัจจุบันจะถูกเน้นด้วยสีเหลือง</div>
+    `;
+    }
+    renderRouteMap() {
+        const s = this.state;
+        this.routeMap.innerHTML = "";
+        if (!s.route.length)
+            return;
+        const line = LINES[s.lineKey ?? "blue"];
+        this.routeMap.innerHTML = this.buildMapMarkup(s.route, s.idx, line.label, line.colorHex, false);
     }
     bindTypingInput() {
         this.typeInput.addEventListener("input", () => {
