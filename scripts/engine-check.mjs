@@ -1,5 +1,6 @@
 // ตรวจ mechanics ของ engine แบบ pure (ไม่ต้องใช้ browser)
 import { LINES } from '../src/data/lines.ts';
+import { bearingAt } from '../src/game/geom.ts';
 import {
   applyInput,
   currentName,
@@ -101,6 +102,18 @@ const st9 = { ...startGame(7000), targetIndex: idx9 };
 check('TH display พระราม 9 มีช่องว่าง', currentName(mrt, st9, 'th') === 'พระราม 9');
 check('TH target ตัดช่องว่าง', currentTarget(mrt, st9, 'th') === 'พระราม9', currentTarget(mrt, st9, 'th'));
 check('EN display Phra Ram 9', currentName(mrt, st9, 'en') === 'Phra Ram 9');
+
+// ---------- bearing (ทิศทางของรถ) ----------
+check('bearing เหนือ = 0', Math.round(bearingAt([[100, 13], [100, 14]], 0)) === 0);
+check('bearing ตะวันออก = 90', Math.round(bearingAt([[100, 13], [101, 13]], 0)) === 90);
+check('bearing ใต้ = 180', Math.round(bearingAt([[100, 14], [100, 13]], 0)) === 180);
+check('bearing ตะวันตก = 270', Math.round(bearingAt([[101, 13], [100, 13]], 0)) === 270);
+check(
+  'bearing เปลี่ยน segment ถูกต้อง',
+  Math.round(bearingAt([[100, 13], [100, 14], [101, 14]], 0.75)) === 90,
+  String(bearingAt([[100, 13], [100, 14], [101, 14]], 0.75)),
+);
+check('bearing จุดเดียว = 0', bearingAt([[100, 13]], 0.5) === 0);
 
 console.log(failed === 0 ? '\nALL PASS' : `\n${failed} FAILED`);
 process.exit(failed === 0 ? 0 : 1);

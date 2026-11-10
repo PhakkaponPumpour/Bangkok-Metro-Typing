@@ -318,14 +318,108 @@ body {
 }
 
 .train {
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+}
+
+/* ตัวรถ — หมุนตามทิศทางเส้นทาง (transform ถูกเซ็ตจาก JS) */
+.train-body {
+  position: relative;
+  width: 12px;
+  height: 22px;
+  border-radius: 6px;
   background: var(--c);
-  border: 3px solid #fff;
+  border: 2px solid #fff;
   box-shadow:
-    0 0 0 3px rgba(0, 0, 0, 0.5),
-    0 0 18px var(--c);
+    0 0 0 2px rgba(0, 0, 0, 0.35),
+    0 0 12px var(--c);
+  transform: rotate(0deg);
+  transition: transform 0.25s ease-out;
+  will-change: transform;
+  animation: train-idle 2.6s ease-in-out infinite;
+}
+
+/* กระจกหน้ารถ */
+.train-body::before {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 2px;
+  right: 2px;
+  height: 5px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.86);
+}
+
+/* ไฟท้าย */
+.train-body::after {
+  content: '';
+  position: absolute;
+  bottom: 4px;
+  left: 50%;
+  width: 4px;
+  height: 4px;
+  margin-left: -2px;
+  border-radius: 50%;
+  background: #fff;
+  opacity: 0.55;
+}
+
+/* วงแหวน pulse ตอนรถเคลื่อนที่ */
+.train::after {
+  content: '';
+  position: absolute;
+  inset: 2px;
+  border-radius: 50%;
+  border: 2px solid var(--c);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.train.moving::after {
+  animation: train-pulse 0.85s ease-out infinite;
+}
+
+.train.moving .train-body {
+  animation: none;
+}
+
+@keyframes train-pulse {
+  0% {
+    transform: scale(0.45);
+    opacity: 0.7;
+  }
+  100% {
+    transform: scale(1.12);
+    opacity: 0;
+  }
+}
+
+@keyframes train-idle {
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 2px rgba(0, 0, 0, 0.35),
+      0 0 10px var(--c);
+  }
+  50% {
+    box-shadow:
+      0 0 0 2px rgba(0, 0, 0, 0.35),
+      0 0 20px var(--c);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .train-body {
+    animation: none;
+    transition: none;
+  }
+  .train.moving::after {
+    animation: none;
+  }
 }
 
 .ghost {

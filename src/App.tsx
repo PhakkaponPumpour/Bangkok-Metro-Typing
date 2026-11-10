@@ -162,6 +162,37 @@ export default function App() {
     }
   };
 
+  // คีย์บอร์ดระดับ window: Enter เริ่มเกม + รับตัวอักษรแม้ focus หลุดไปที่แผนที่
+  const handleInputRef = useRef(handleInput);
+  handleInputRef.current = handleInput;
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const s = stateRef.current;
+
+      if (e.key === 'Enter') {
+        if (s.status === 'running') return;
+        e.preventDefault();
+        begin();
+        return;
+      }
+
+      if (s.status !== 'running') return;
+
+      const input = inputRef.current;
+      if (!input || document.activeElement === input) return; // ปกติ onInput จัดการเอง
+      if (e.ctrlKey || e.metaKey || e.altKey) return;
+      if (e.key.length !== 1) return; // ข้าม Backspace / Arrow / IME process
+
+      e.preventDefault();
+      input.focus();
+      handleInputRef.current((input.value ?? '') + e.key);
+    };
+
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [begin]);
+
   const focusInput = () => inputRef.current?.focus();
 
   const ghostProgress =
@@ -199,9 +230,6 @@ export default function App() {
         autoCorrect="off"
         spellCheck={false}
         onInput={(e) => handleInput(e.currentTarget.value)}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter' && stateRef.current.status !== 'running') begin();
-        }}
       />
 
       <div className="footer">{t(lang, 'footer')}</div>
