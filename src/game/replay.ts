@@ -45,21 +45,3 @@ export function saveGhost(g: Ghost): boolean {
   return false;
 }
 
-export function ghostProgressAt(g: Ghost, elapsedMs: number): number | null {
-  if (elapsedMs <= 0) return 0;
-  const s = g.samples;
-  if (s.length === 0) return null;
-  if (elapsedMs >= s[s.length - 1].t) return s[s.length - 1].p;
-
-  let lo = 0;
-  let hi = s.length - 1;
-  while (lo < hi) {
-    const mid = (lo + hi) >> 1;
-    if (s[mid].t < elapsedMs) lo = mid + 1;
-    else hi = mid;
-  }
-  const b = s[lo];
-  const a = s[Math.max(0, lo - 1)];
-  const span = b.t - a.t;
-  return span <= 0 ? b.p : a.p + (b.p - a.p) * ((elapsedMs - a.t) / span);
-}

@@ -11,7 +11,6 @@ import {
   type GameState,
 } from './game/engine';
 import {
-  ghostProgressAt,
   loadGhost,
   saveGhost,
   type Ghost,
@@ -69,14 +68,27 @@ export default function App() {
     setIsRecord(false);
   }, [line.id, mode]);
 
-  // รีเซ็ตเกมเมื่อเปลี่ยนสาย/โหมด
-  useEffect(() => {
-    setState(initialState());
+  // รีเซ็ตกลับสถานะพร้อมเล่น (เปลี่ยนสาย/โหมด หรือกดหยุด)
+  const resetRun = useCallback(() => {
+    const s = initialState();
+    stateRef.current = s;
+    setState(s);
     setElapsed(0);
     startedAtRef.current = null;
     samplesRef.current = [];
+    setIsRecord(false);
     if (inputRef.current) inputRef.current.value = '';
-  }, [line.id, mode]);
+  }, []);
+
+  // รีเซ็ตเกมเมื่อเปลี่ยนสาย/โหมด
+  useEffect(() => {
+    resetRun();
+  }, [line.id, mode, resetRun]);
+
+  // หยุดเกมกลางคัน — ไม่บันทึกสถิติ
+  const stopRun = useCallback(() => {
+    if (stateRef.current.status === 'running') resetRun();
+  }, [resetRun]);
 
   const saveRun = useCallback(
     (s: GameState, now: number) => {
@@ -195,17 +207,9 @@ export default function App() {
 
   const focusInput = () => inputRef.current?.focus();
 
-  const ghostProgress =
-    ghost && state.status === 'running' ? ghostProgressAt(ghost, elapsed) : null;
-
   return (
     <div className="app" onPointerDown={focusInput}>
-      <MapView
-        line={line}
-        progress={progress(line, state, lang)}
-        ghostProgress={ghostProgress}
-        lang={lang}
-      />
+      <MapView line={line} progress={progress(line, state, lang)} lang={lang} />
 
       <HUD
         lines={LINES}
@@ -218,6 +222,7 @@ export default function App() {
         isRecord={isRecord}
         lang={lang}
         onStart={begin}
+        onStop={stopRun}
         onSelectLine={setLineId}
         onSelectMode={setMode}
         onSelectLang={setLang}

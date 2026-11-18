@@ -19,6 +19,7 @@ body {
 .app {
   position: relative;
   height: 100%;
+  overflow: hidden;
   cursor: text;
 }
 
@@ -37,18 +38,62 @@ body {
 
 /* ---------- HUD ---------- */
 
-.hud {
+/* กลุ่มล่างจอ: ช่องพิมพ์ซ้อนเหนือแถบควบคุม */
+.hud-dock {
   position: absolute;
-  top: 16px;
-  left: 16px;
-  z-index: 5;
-  width: min(430px, calc(100vw - 32px));
-  padding: 18px 20px 16px;
-  border-radius: 18px;
-  background: rgba(11, 15, 23, 0.84);
+  left: 50%;
+  bottom: 14px;
+  z-index: 6;
+  width: min(1040px, calc(100vw - 24px));
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  transform: translateX(-50%);
+}
+
+/* ตัวอักษรเป้าหมาย — เหนือปุ่มเริ่ม */
+.typing-zone {
+  width: 100%;
+  padding: 14px 18px 16px;
+  border-radius: 16px;
+  background: rgba(11, 15, 23, 0.87);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.55);
+  box-shadow: 0 18px 60px rgba(0, 0, 0, 0.5);
   backdrop-filter: blur(14px);
+  text-align: center;
+  pointer-events: none;
+}
+
+.tagline {
+  margin-bottom: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(232, 236, 243, 0.5);
+  text-shadow: 0 1px 6px #000;
+}
+
+/* แถบควบคุม + สถิติ + ปุ่มเริ่ม */
+.hud-bar {
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 18px;
+  padding: 12px 16px;
+  border-radius: 16px;
+  background: rgba(11, 15, 23, 0.87);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 18px 60px rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(14px);
+}
+
+.bar-left {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
 }
 
 .brand {
@@ -277,10 +322,160 @@ body {
   color: #6b7688;
 }
 
+/* ---------- ปรับขนาดสำหรับเลย์เอาต์ใหม่ ---------- */
+
+.hud-bar .brand {
+  font-size: 16px;
+}
+
+.hud-bar .langs,
+.hud-bar .row {
+  margin-top: 0;
+}
+
+.hud-bar .row {
+  flex: 0 1 auto;
+  min-width: 230px;
+}
+
+.hud-bar .modes button {
+  padding: 5px 9px;
+  font-size: 11.5px;
+}
+
+.hud-bar .stats {
+  flex: 1;
+  min-width: 260px;
+  margin-top: 0;
+  padding-top: 0;
+  border-top: 0;
+}
+
+.hud-bar .actions {
+  display: flex;
+  gap: 8px;
+}
+
+.hud-bar .start {
+  width: auto;
+  min-width: 150px;
+  margin-top: 0;
+  padding: 11px 18px;
+  font-size: 13.5px;
+}
+
+.hud-bar .stop {
+  padding: 11px 16px;
+  border: 1px solid rgba(248, 113, 113, 0.35);
+  border-radius: 11px;
+  background: rgba(248, 113, 113, 0.08);
+  color: #f87171;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.hud-bar .stop:hover:not(:disabled) {
+  background: rgba(248, 113, 113, 0.16);
+}
+
+.hud-bar .stop:disabled {
+  border-color: rgba(255, 255, 255, 0.1);
+  background: transparent;
+  color: #6b7688;
+  opacity: 0.45;
+  cursor: default;
+}
+
+.hud-bar .hint {
+  flex-basis: 100%;
+  margin: 0;
+  text-align: center;
+}
+
+.typing-zone .stops {
+  justify-content: center;
+  margin-top: 0;
+  text-shadow: 0 1px 6px #000;
+}
+
+.typing-zone .target {
+  justify-content: center;
+  margin: 8px 0 0;
+  font-size: clamp(28px, 4.6vw, 44px);
+  min-height: 56px;
+  text-shadow: 0 2px 14px rgba(0, 0, 0, 0.9);
+}
+
+.typing-zone .result {
+  display: inline-flex;
+  align-items: center;
+  margin-top: 16px;
+}
+
+@media (max-width: 720px) {
+  .hud-dock {
+    bottom: 8px;
+    gap: 8px;
+  }
+
+  .typing-zone {
+    padding: 10px 12px 12px;
+  }
+
+  .typing-zone .target {
+    font-size: 30px;
+    min-height: 44px;
+  }
+
+  .hud-bar {
+    gap: 8px 10px;
+    padding: 10px 12px;
+  }
+
+  .hud-bar .bar-left {
+    flex: 1 1 100%;
+  }
+
+  .hud-bar .row {
+    min-width: 0;
+  }
+
+  .hud-bar .stats {
+    order: 3;
+    flex-basis: 100%;
+    min-width: 0;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+
+  .hud-bar .actions {
+    order: 2;
+    flex: 1 1 100%;
+  }
+
+  .hud-bar .start {
+    flex: 1;
+  }
+
+  .hud-bar .stop {
+    min-width: 80px;
+  }
+
+  .hud-bar .hint {
+    order: 4;
+  }
+
+  /* จอเล็ก: footer จะทับ attribution ที่มุมขวาบน */
+  .footer {
+    display: none;
+  }
+}
+
 .footer {
   position: absolute;
-  right: 16px;
-  bottom: 12px;
+  left: 14px;
+  top: 12px;
   z-index: 4;
   font-size: 10px;
   color: rgba(255, 255, 255, 0.35);
@@ -325,7 +520,7 @@ body {
   pointer-events: none;
 }
 
-/* ตัวรถ — หมุนตามทิศทางเส้นทาง (transform ถูกเซ็ตจาก JS) */
+/* ตัวรถ — หันตามแนวราง (transform ถูกเซ็ตจาก JS) */
 .train-body {
   position: relative;
   width: 12px;
@@ -420,14 +615,6 @@ body {
   .train.moving::after {
     animation: none;
   }
-}
-
-.ghost {
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  border: 2px dashed rgba(255, 255, 255, 0.85);
-  opacity: 0.7;
 }
 
 .maplibregl-ctrl-attrib {

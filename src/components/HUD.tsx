@@ -15,6 +15,7 @@ interface Props {
   isRecord: boolean;
   lang: Lang;
   onStart: () => void;
+  onStop: () => void;
   onSelectLine: (id: string) => void;
   onSelectMode: (mode: 'normal' | 'time') => void;
   onSelectLang: (lang: Lang) => void;
@@ -35,6 +36,7 @@ export function HUD({
   isRecord,
   lang,
   onStart,
+  onStop,
   onSelectLine,
   onSelectMode,
   onSelectLang,
@@ -71,112 +73,127 @@ export function HUD({
   });
 
   return (
-    <aside className="hud">
-      <div className="brand">
-        METRO<span>TH</span>
-        <em>{t(lang, 'tagline')}</em>
-      </div>
+    <div className="hud-dock">
+      {/* เหนือแถบควบคุม: ตัวอักษรเป้าหมาย */}
+      <section className="typing-zone">
+        <div className="tagline">{t(lang, 'tagline')}</div>
 
-      <div className="langs">
-        <button
-          className={lang === 'th' ? 'on' : ''}
-          onClick={() => onSelectLang('th')}
-          disabled={running}
-        >
-          ไทย
-        </button>
-        <button
-          className={lang === 'en' ? 'on' : ''}
-          onClick={() => onSelectLang('en')}
-          disabled={running}
-        >
-          EN
-        </button>
-      </div>
-
-      <div className="row">
-        <select
-          className="select"
-          value={line.id}
-          onChange={(e) => onSelectLine(e.target.value)}
-          disabled={running}
-        >
-          {lines.map((l) => (
-            <option key={l.id} value={l.id}>
-              {lang === 'en' ? l.nameEn : l.name}
-            </option>
-          ))}
-        </select>
-        <div className="modes">
-          <button
-            className={mode === 'normal' ? 'on' : ''}
-            onClick={() => onSelectMode('normal')}
-            disabled={running}
-          >
-            {t(lang, 'normal')}
-          </button>
-          <button
-            className={mode === 'time' ? 'on' : ''}
-            onClick={() => onSelectMode('time')}
-            disabled={running}
-          >
-            {fmt(t(lang, 'time'), { s: Math.round(limitMs / 1000) })}
-          </button>
-        </div>
-      </div>
-
-      <div className="stops">
-        {fmt(t(lang, 'station'), { n: state.targetIndex, total: lastIdx })}
-        {from && to && (
-          <span className="route">
-            {lang === 'en' ? from.nameEn : from.name} → {lang === 'en' ? to.nameEn : to.name}
-          </span>
-        )}
-      </div>
-
-      <div className={`target ${state.status === 'ready' ? 'idle' : ''}`}>{charNodes}</div>
-
-      <div className="stats">
-        <div>
-          <label>{t(lang, 'score')}</label>
-          <b>{state.score.toLocaleString(lang === 'th' ? 'th-TH' : 'en-US')}</b>
-        </div>
-        <div>
-          <label>{t(lang, 'combo')}</label>
-          <b className={state.combo >= 10 ? 'hot' : ''}>×{state.combo}</b>
-        </div>
-        <div>
-          <label>{t(lang, 'accuracy')}</label>
-          <b>{accuracy(state).toFixed(1)}%</b>
-        </div>
-        <div>
-          <label>WPM</label>
-          <b>{Math.round(wpm(state, elapsedMs))}</b>
-        </div>
-        <div>
-          <label>{mode === 'time' ? t(lang, 'timeLeft') : t(lang, 'timeElapsed')}</label>
-          <b>{seconds(shownTime)}</b>
-        </div>
-      </div>
-
-      {finished && (
-        <div className="result">
-          {t(lang, 'arrived')} {state.score.toLocaleString(lang === 'th' ? 'th-TH' : 'en-US')}
-          {isRecord && <span className="record">{t(lang, 'record')}</span>}
-          {ghost && !isRecord && (
-            <span className="ghostnote">
-              {t(lang, 'best')} {ghost.score.toLocaleString(lang === 'th' ? 'th-TH' : 'en-US')} •{' '}
-              {seconds(ghost.duration)}
+        <div className="stops">
+          {fmt(t(lang, 'station'), { n: state.targetIndex, total: lastIdx })}
+          {from && to && (
+            <span className="route">
+              {lang === 'en' ? from.nameEn : from.name} → {lang === 'en' ? to.nameEn : to.name}
             </span>
           )}
         </div>
-      )}
 
-      <button className="start" onClick={onStart} disabled={running}>
-        {running ? t(lang, 'playing') : finished ? t(lang, 'again') : t(lang, 'start')}
-      </button>
+        <div className={`target ${state.status === 'ready' ? 'idle' : ''}`}>{charNodes}</div>
 
-      <p className="hint">{t(lang, 'hint')}</p>
-    </aside>
+        {finished && (
+          <div className="result">
+            {t(lang, 'arrived')} {state.score.toLocaleString(lang === 'th' ? 'th-TH' : 'en-US')}
+            {isRecord && <span className="record">{t(lang, 'record')}</span>}
+            {ghost && !isRecord && (
+              <span className="ghostnote">
+                {t(lang, 'best')}{' '}
+                {ghost.score.toLocaleString(lang === 'th' ? 'th-TH' : 'en-US')} •{' '}
+                {seconds(ghost.duration)}
+              </span>
+            )}
+          </div>
+        )}
+      </section>
+
+      {/* ด้านล่าง: ควบคุม + สถิติ + ปุ่มเริ่ม */}
+      <aside className="hud-bar">
+        <div className="bar-left">
+          <div className="brand">
+            METRO<span>TH</span>
+          </div>
+
+          <div className="langs">
+            <button
+              className={lang === 'th' ? 'on' : ''}
+              onClick={() => onSelectLang('th')}
+              disabled={running}
+            >
+              ไทย
+            </button>
+            <button
+              className={lang === 'en' ? 'on' : ''}
+              onClick={() => onSelectLang('en')}
+              disabled={running}
+            >
+              EN
+            </button>
+          </div>
+
+          <div className="row">
+            <select
+              className="select"
+              value={line.id}
+              onChange={(e) => onSelectLine(e.target.value)}
+              disabled={running}
+            >
+              {lines.map((l) => (
+                <option key={l.id} value={l.id}>
+                  {lang === 'en' ? l.nameEn : l.name}
+                </option>
+              ))}
+            </select>
+            <div className="modes">
+              <button
+                className={mode === 'normal' ? 'on' : ''}
+                onClick={() => onSelectMode('normal')}
+                disabled={running}
+              >
+                {t(lang, 'normal')}
+              </button>
+              <button
+                className={mode === 'time' ? 'on' : ''}
+                onClick={() => onSelectMode('time')}
+                disabled={running}
+              >
+                {fmt(t(lang, 'time'), { s: Math.round(limitMs / 1000) })}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div className="stats">
+          <div>
+            <label>{t(lang, 'score')}</label>
+            <b>{state.score.toLocaleString(lang === 'th' ? 'th-TH' : 'en-US')}</b>
+          </div>
+          <div>
+            <label>{t(lang, 'combo')}</label>
+            <b className={state.combo >= 10 ? 'hot' : ''}>×{state.combo}</b>
+          </div>
+          <div>
+            <label>{t(lang, 'accuracy')}</label>
+            <b>{accuracy(state).toFixed(1)}%</b>
+          </div>
+          <div>
+            <label>WPM</label>
+            <b>{Math.round(wpm(state, elapsedMs))}</b>
+          </div>
+          <div>
+            <label>{mode === 'time' ? t(lang, 'timeLeft') : t(lang, 'timeElapsed')}</label>
+            <b>{seconds(shownTime)}</b>
+          </div>
+        </div>
+
+        <div className="actions">
+          <button className="stop" onClick={onStop} disabled={!running}>
+            {t(lang, 'stop')}
+          </button>
+          <button className="start" onClick={onStart} disabled={running}>
+            {running ? t(lang, 'playing') : finished ? t(lang, 'again') : t(lang, 'start')}
+          </button>
+        </div>
+
+        <p className="hint">{t(lang, 'hint')}</p>
+      </aside>
+    </div>
   );
 }

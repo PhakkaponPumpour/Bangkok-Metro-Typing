@@ -11,19 +11,19 @@ const STYLE_URL = 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.j
 interface Props {
   line: Line;
   progress: number;
-  ghostProgress: number | null;
   lang: Lang;
 }
 
-export function MapView({ line, progress, ghostProgress, lang }: Props) {
+export function MapView({ line, progress, lang }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
   const stationMarkers = useRef<maplibregl.Marker[]>([]);
   const trainRef = useRef<maplibregl.Marker | null>(null);
   const trainBodyRef = useRef<HTMLDivElement | null>(null);
-  const ghostRef = useRef<maplibregl.Marker | null>(null);
-  const posRef = useRef<[number, number] | null>(null);
-  const targetRef = useRef<[number, number] | null>(null);
+  const lastBearingRef = useRef<number | null>(null);
+  const coordsRef = useRef<[number, number][]>([]);
+  const shownProgressRef = useRef<number | null>(null);
+  const targetProgressRef = useRef<number | null>(null);
   const lineIdRef = useRef('');
   const movingRef = useRef(false);
   const [loaded, setLoaded] = useState(false);
@@ -35,8 +35,10 @@ export function MapView({ line, progress, ghostProgress, lang }: Props) {
       style: STYLE_URL,
       center: [100.55, 13.75],
       zoom: 12,
-      attributionControl: { compact: true },
+      attributionControl: false,
     });
+    // วาง attribution ไว้มุมขวาบน เพื่อไม่ให้แถบล่างบัง (ODbL ต้องมองเห็นได้)
+    map.addControl(new maplibregl.AttributionControl({ compact: true }), 'top-right');
     mapRef.current = map;
     // กัน canvas แย่ง focus จาก input ตอนผู้เล่นคลิกแผนที่
     map.getCanvas().removeAttribute('tabindex');
@@ -44,13 +46,13 @@ export function MapView({ line, progress, ghostProgress, lang }: Props) {
     return () => {
       stationMarkers.current.forEach((m) => m.remove());
       trainRef.current?.remove();
-      ghostRef.current?.remove();
       stationMarkers.current = [];
       trainRef.current = null;
       trainBodyRef.current = null;
-      ghostRef.current = null;
-      posRef.current = null;
-      targetRef.current = null;
+      lastBearingRef.current = null;
+      coordsRef.current = [];
+      shownProgressRef.current = null;
+      targetProgressRef.current = null;
       lineIdRef.current = '';
       movingRef.current = false;
       map.remove();
@@ -114,22 +116,22 @@ export function MapView({ line, progress, ghostProgress, lang }: Props) {
     map.fitBounds(bounds, { padding: 90, duration: 500 });
   }, [line, loaded, lang]);
 
-  // ขบวนรถของผู้เล่น — ตั้งเป้าหมายไว้ แล้วให้ rAF ข้างล่างเลื่อนไปหาอย่างนุ่มนวล
+  // ขบวนรถของผู้เล่น — ตั้งเป้าความคืบหน้าไว้ แล้วให้ rAF ข้างล่างไล่ตามบนเส้นทาง
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !loaded) return;
 
     const coords = line.stations.map((s) => s.coord);
+    coordsRef.current = coords;
     const pos = pointAtFraction(coords, progress);
-    const bearing = bearingAt(coords, progress);
 
     // เปลี่ยนสาย → กระโดดไปจุดใหม่ทันที (ไม่ให้รถลอยข้ามเมือง)
     if (lineIdRef.current !== line.id) {
       lineIdRef.current = line.id;
-      posRef.current = null;
+      shownProgressRef.current = null;
     }
 
-    targetRef.current = [pos[0], pos[1]];
+    targetProgressRef.current = progress;
 
     if (!trainRef.current) {
       const el = document.createElement('div');
@@ -137,20 +139,20 @@ export function MapView({ line, progress, ghostProgress, lang }: Props) {
       el.style.setProperty('--c', line.color);
       const body = document.createElement('div');
       body.className = 'train-body';
+      const bearing = bearingAt(coords, progress);
+      body.style.transform = `rotate(${bearing}deg)`;
+      lastBearingRef.current = bearing;
       el.append(body);
       trainBodyRef.current = body;
       trainRef.current = new maplibregl.Marker({ element: el }).setLngLat(pos).addTo(map);
-      posRef.current = [pos[0], pos[1]];
+      shownProgressRef.current = progress;
     } else {
       trainRef.current.getElement().style.setProperty('--c', line.color);
     }
-
-    if (trainBodyRef.current) {
-      trainBodyRef.current.style.transform = `rotate(${bearing}deg)`;
-    }
   }, [progress, line, loaded]);
 
-  // อนิเมชันการเคลื่อนที่ของรถ — interpolate ทุกเฟรม
+  // อนิเมชันการเคลื่อนที่ของรถ — ไล่ "ความคืบหน้า" ทีละเฟรม แล้วคำนวณพิกัดบนเส้นทาง
+  // (ไม่ lerp พิกัดตรง ๆ เพราะจะทำให้รถตัดมุมออกนอกเส้น)
   useEffect(() => {
     if (!loaded) return;
     const reduce =
@@ -162,30 +164,54 @@ export function MapView({ line, progress, ghostProgress, lang }: Props) {
       const dt = Math.min(64, now - last); // กันรถกระโดดหลังสลับแท็บ
       last = now;
 
-      const target = targetRef.current;
+      const target = targetProgressRef.current;
       const marker = trainRef.current;
+      const coords = coordsRef.current;
 
-      if (target && marker) {
-        let cur = posRef.current;
-        if (!cur) {
-          cur = [target[0], target[1]];
-          posRef.current = cur;
-          marker.setLngLat(cur);
+      if (target != null && marker && coords.length > 1) {
+        let shown = shownProgressRef.current;
+        let changed = false;
+
+        if (shown == null) {
+          shown = target;
+          shownProgressRef.current = shown;
+          changed = true;
         } else {
-          const dx = target[0] - cur[0];
-          const dy = target[1] - cur[1];
-          const moving = Math.hypot(dx, dy) > 1e-7;
+          const diff = target - shown;
+          const moving = Math.abs(diff) > 1e-5;
 
           if (moving) {
             const k = reduce ? 1 : 1 - Math.pow(0.18, dt / 100);
-            cur[0] += dx * k;
-            cur[1] += dy * k;
-            marker.setLngLat(cur);
+            shown += diff * k;
+            if (Math.abs(target - shown) < 1e-6) shown = target;
+            shownProgressRef.current = shown;
+            changed = true;
+          } else if (shown !== target) {
+            shown = target;
+            shownProgressRef.current = shown;
+            changed = true;
           }
 
           if (moving !== movingRef.current) {
             movingRef.current = moving;
             marker.getElement().classList.toggle('moving', moving);
+          }
+        }
+
+        if (changed) {
+          marker.setLngLat(pointAtFraction(coords, shown));
+
+          // หันตัวรถตามแนวราง ณ ตำแหน่งที่รถอยู่จริง
+          const body = trainBodyRef.current;
+          if (body) {
+            const bearing = bearingAt(coords, shown);
+            if (
+              lastBearingRef.current == null ||
+              Math.abs(bearing - lastBearingRef.current) > 0.01
+            ) {
+              lastBearingRef.current = bearing;
+              body.style.transform = `rotate(${bearing}deg)`;
+            }
           }
         }
       }
@@ -196,28 +222,6 @@ export function MapView({ line, progress, ghostProgress, lang }: Props) {
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
   }, [loaded]);
-
-  // ghost (สถิติที่ดีที่สุด)
-  useEffect(() => {
-    const map = mapRef.current;
-    if (!map || !loaded) return;
-    if (ghostProgress == null) {
-      if (ghostRef.current) ghostRef.current.getElement().style.display = 'none';
-      return;
-    }
-    const pos = pointAtFraction(
-      line.stations.map((s) => s.coord),
-      ghostProgress,
-    );
-    if (!ghostRef.current) {
-      const el = document.createElement('div');
-      el.className = 'ghost';
-      ghostRef.current = new maplibregl.Marker({ element: el }).setLngLat(pos).addTo(map);
-    } else {
-      ghostRef.current.getElement().style.display = '';
-      ghostRef.current.setLngLat(pos);
-    }
-  }, [ghostProgress, line, loaded]);
 
   return <div ref={containerRef} className="map" />;
 }
